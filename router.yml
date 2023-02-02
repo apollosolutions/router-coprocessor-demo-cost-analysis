@@ -1,0 +1,24 @@
+sandbox:
+  enabled: true
+supergraph:
+  introspection: true
+  listen: 0.0.0.0:4000
+health-check:
+  enabled: true
+  listen: 0.0.0.0:8088
+homepage:
+  enabled: false
+include_subgraph_errors:
+  all: true
+cors:
+  allow_any_origin: true
+plugins:
+  experimental.external:
+    url: http://sidecar:4040/ # mandatory URL which is the address of the co-processor
+    stages: # In future, multiple stages may be configurable
+      router: # Currently, the only valid value is router
+        request: # What data should we transmit to the co-processor from the router request?
+          headers: true # All of these data content attributes are optional and false by default.
+          context: true
+          body: true
+          sdl: true

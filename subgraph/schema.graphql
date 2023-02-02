@@ -1,0 +1,36 @@
+extend schema
+    @link(url: "https://specs.apollo.dev/link/v1.0")
+    @link(url: "https://specs.apollo.dev/federation/v2.1", import: ["@composeDirective"])
+    @link(url: "https://myspecs.dev/myDirective/v1.0", import: ["@cost"])
+    @composeDirective(name: "@cost")
+
+directive @cost(
+  # The complexity value for the field
+  value: Int!
+
+  # Optional multipliers
+  multipliers: [String!]
+) on FIELD_DEFINITION
+
+type Query {
+    user: User
+}
+
+union Status = BanStatus | ValidStatus
+
+type BanStatus {
+    id: ID!
+}
+type ValidStatus {
+    idT: ID!
+}
+enum UserType {
+    INACTIVE
+    ACTIVE
+}
+type User {
+    id: ID!
+    type: UserType @cost(value: 10)
+    status: Status
+    friends(first: Int = 10): [User!]! @cost(value: 0, multipliers: ["first"])
+}
