@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  sidecar:
+    container_name: sidecar
+    build: sidecar/
+    environment:
+      - PORT=4040
+  router:
+    container_name: router
+    image: ghcr.io/apollographql/router:v1.10.0
+    volumes:
+      - ./router.yml:/dist/config/router.yaml:ro
+    environment:
+      - APOLLO_KEY=${APOLLO_KEY}
+      - APOLLO_GRAPH_REF=${APOLLO_GRAPH_REF}
+    ports:
+      - 4000:4000
+  subgraph:
+    container_name: only-subgraph
+    build: subgraph/
