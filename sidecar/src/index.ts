@@ -54,13 +54,6 @@ const typeCostEstimator = (options: TypeCostOptions) => {
 const app = express()
 app.use(express.json())
 app.use('*', (req, res) => {
-    if (req.body.body.operationName === 'IntrospectionQuery') {
-        return res.status(200).json({
-            control: "Continue",
-            version: 1,
-            stage: "RouterRequest"
-        })
-    }
     try {
         let hash = crypto.createHash('md5').update(req.body.sdl).digest("hex")
         if (hash !== schemaHash) {
@@ -71,8 +64,7 @@ app.use('*', (req, res) => {
         }
         let complexity = 0;
         let operationHash: string = crypto.createHash('md5').update(JSON.stringify(req.body.body)).digest("hex")
-        if (!!operationMap.get(operationHash)) {
-            console.log(`Existing operation, reusing old calculation`)
+        if (operationMap.has(operationHash)) {
             complexity = operationMap.get(operationHash) ?? 0
         } else {
             let query = parse(req.body.body.query)
@@ -97,7 +89,7 @@ app.use('*', (req, res) => {
         }
 
 
-        console.log(`Cost is: ${complexity}`); // Output: 3
+        console.log(`Cost is ${complexity} for operation ${req.body.body.operationName}`); // Output: 3
         // do stuff here
         if (complexity > 100) {
             return res.json({
@@ -106,7 +98,6 @@ app.use('*', (req, res) => {
                 "control": {
                     Break: 429
                 },
-                "id": "1b19c05fdafc521016df33148ad63c1b",
             })
         }
     } catch (e) {
@@ -119,14 +110,12 @@ app.use('*', (req, res) => {
             "control": {
                 Break: 400
             },
-            "id": "1b19c05fdafc521016df33148ad63c1b",
         })
     }
     res.status(200).json({
         "version": 1,
         "stage": "RouterRequest",
         "control": "Continue",
-        "id": "1b19c05fdafc521016df33148ad63c1b",
     })
 })
 
